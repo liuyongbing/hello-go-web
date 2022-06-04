@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -11,6 +12,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/liuyongbing/hello-go-web/user-web/global/response"
 	"github.com/liuyongbing/hello-go-web/user-web/proto"
 )
 
@@ -33,6 +35,10 @@ func HandleGrpcErrorToHttp(err error, c *gin.Context) {
 			case codes.InvalidArgument:
 				c.JSON(http.StatusBadRequest, gin.H{
 					"msg": "参数错误",
+				})
+			case codes.Unavailable:
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"msg": "服务不可用",
 				})
 			default:
 				c.JSON(http.StatusInternalServerError, gin.H{
@@ -76,15 +82,24 @@ func GetUserList(ctx *gin.Context) {
 
 	result := make([]interface{}, 0)
 	for _, value := range rsp.Data {
-		data := make(map[string]interface{})
+		// data := make(map[string]interface{})
 
-		data["id"] = value.Id
-		data["name"] = value.NickName
-		data["birthday"] = value.BirthDay
-		data["gender"] = value.Gender
-		data["mobile"] = value.Mobile
+		// data["id"] = value.Id
+		// data["name"] = value.NickName
+		// data["birthday"] = value.BirthDay
+		// data["gender"] = value.Gender
+		// data["mobile"] = value.Mobile
 
-		result = append(result, data)
+		// result = append(result, data)
+
+		user := response.UserResponse{
+			Id:       value.Id,
+			NickName: value.NickName,
+			Birthday: time.Time(time.Unix(int64(value.BirthDay), 0)),
+			Gender:   value.Gender,
+			Mobile:   value.Mobile,
+		}
+		result = append(result, user)
 	}
 
 	ctx.JSON(http.StatusOK, result)
