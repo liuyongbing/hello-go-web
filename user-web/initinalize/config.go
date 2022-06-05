@@ -1,0 +1,54 @@
+package initinalize
+
+import (
+	"fmt"
+
+	"github.com/fsnotify/fsnotify"
+	"github.com/spf13/viper"
+	"go.uber.org/zap"
+
+	"github.com/liuyongbing/hello-go-web/user-web/global"
+)
+
+func GetEnvInfo(env string) string {
+	viper.AutomaticEnv()
+
+	return viper.GetString(env)
+}
+
+func InitConfig() {
+	// 根据环境变量加载配置文件
+	debug := GetEnvInfo("PATH")
+	pathStr := ""
+	configFileMode := "prd"
+	if pathStr != debug {
+		configFileMode = "dev"
+	}
+	configFileName := fmt.Sprintf("config/config-%s.yaml", configFileMode)
+
+	v := viper.New()
+	v.SetConfigFile(configFileName)
+
+	// 读取配置文件内容
+	if err := v.ReadInConfig(); err != nil {
+		panic(err)
+	}
+
+	// 将配置文件内容映射到 配置 struct
+	if err := v.Unmarshal(&global.ServerConfig); err != nil {
+		panic(err)
+	}
+	zap.S().Infof("加载配置信息：%v", global.ServerConfig)
+
+	// 动态监控配置文件变化
+	v.WatchConfig()
+	v.OnConfigChange(func(e fsnotify.Event) {
+		fmt.Println("Config file channed:", e.Name)
+		v.ReadInConfig()
+		v.Unmarshal(&global.ServerConfig)
+		fmt.Println(&global.ServerConfig)
+	})
+
+	// time.Sleep(time.Second * 100)
+
+}

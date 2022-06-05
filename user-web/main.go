@@ -5,18 +5,22 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/liuyongbing/hello-go-web/user-web/global"
 	"github.com/liuyongbing/hello-go-web/user-web/initinalize"
 )
 
 func main() {
 	fmt.Println("Hello, this is for Go srvs of user srv API web.")
 
-	port := 8021
-
 	// Logger 初始化交由初始化层处理, 此处只负责调用
 	// logger, _ := zap.NewProduction()
 	// zap.ReplaceGlobals(logger)
 	initinalize.InitLogger()
+
+	// 初始化配置加载
+	initinalize.InitConfig()
+
+	port := global.ServerConfig.Port
 
 	// router := gin.Default()
 	// 1. 路由配置交给专门的路由配置层处理

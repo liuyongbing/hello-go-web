@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/liuyongbing/hello-go-web/user-web/global"
 	"github.com/liuyongbing/hello-go-web/user-web/global/response"
 	"github.com/liuyongbing/hello-go-web/user-web/proto"
 )
@@ -56,8 +57,8 @@ GetUserList
 User API: 获取用户列表
 */
 func GetUserList(ctx *gin.Context) {
-	ip := "127.0.0.1"
-	port := 50051
+	ip := global.ServerConfig.UserSrvInfo.Host
+	port := global.ServerConfig.UserSrvInfo.Port
 
 	// 拨号连接 user grpc 服务
 	userConn, err := grpc.Dial(fmt.Sprintf("%s:%d", ip, port), grpc.WithInsecure())

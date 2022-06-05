@@ -1,0 +1,6 @@
+name: "user-web"
+host: "goweb.keyi.art"
+port: 8021
+user_srv:
+  host: "gosrv.usersrv.keyi.art"
+  port: 50051
