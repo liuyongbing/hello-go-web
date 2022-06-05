@@ -35,18 +35,19 @@ func InitConfig() {
 	}
 
 	// 将配置文件内容映射到 配置 struct
-	if err := v.Unmarshal(&global.ServerConfig); err != nil {
+	serverConfig := global.ServerConfig
+	if err := v.Unmarshal(&serverConfig); err != nil {
 		panic(err)
 	}
-	zap.S().Infof("加载配置信息：%v", global.ServerConfig)
+	zap.S().Infof("加载配置信息：%v", serverConfig)
 
 	// 动态监控配置文件变化
 	v.WatchConfig()
 	v.OnConfigChange(func(e fsnotify.Event) {
-		fmt.Println("Config file channed:", e.Name)
+		zap.S().Infof("配置文件产生变化：%v", e.Name)
 		v.ReadInConfig()
-		v.Unmarshal(&global.ServerConfig)
-		fmt.Println(&global.ServerConfig)
+		v.Unmarshal(&serverConfig)
+		zap.S().Infof("配置信息：%v", serverConfig)
 	})
 
 	// time.Sleep(time.Second * 100)
