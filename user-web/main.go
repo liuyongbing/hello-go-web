@@ -5,8 +5,13 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/gin-gonic/gin/binding"
+	ut "github.com/go-playground/universal-translator"
+	"github.com/go-playground/validator/v10"
+
 	"github.com/liuyongbing/hello-go-web/user-web/global"
-	"github.com/liuyongbing/hello-go-web/user-web/initinalize"
+	"github.com/liuyongbing/hello-go-web/user-web/initialize"
+	myvalidator "github.com/liuyongbing/hello-go-web/user-web/validator"
 )
 
 func main() {
@@ -15,12 +20,26 @@ func main() {
 	// Logger 初始化交由初始化层处理, 此处只负责调用
 	// logger, _ := zap.NewProduction()
 	// zap.ReplaceGlobals(logger)
-	initinalize.InitLogger()
+	initialize.InitLogger()
 
 	// 初始化配置加载
-	initinalize.InitConfig()
+	initialize.InitConfig()
 
-	port := global.ServerConfig.Port
+	// 载入语言包
+	if err := initialize.InitTrans("zh"); err != nil {
+		panic(err)
+	}
+
+	// 注册验证器
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		_ = v.RegisterValidation("mobile", myvalidator.ValidateMobile)
+		_ = v.RegisterTranslation("mobile", global.Trans, func(ut ut.Translator) error {
+			return ut.Add("mobile", "{0} 非法的手机号码!", true) // see universal-translator for details
+		}, func(ut ut.Translator, fe validator.FieldError) string {
+			t, _ := ut.T("mobile", fe.Field())
+			return t
+		})
+	}
 
 	// router := gin.Default()
 	// 1. 路由配置交给专门的路由配置层处理
@@ -31,7 +50,8 @@ func main() {
 	// iRouter.InitUserRouter(ApiGroup)
 
 	// 3. 初始化 Router
-	Router := initinalize.Routers()
+	port := global.ServerConfig.Port
+	Router := initialize.Routers()
 	/*
 		1. zap.S()可以获取一个全局的 sugar,可以让我们自己设置一个全局的 logger
 		2. 日志的分级: debug, info, warning, error, fetal

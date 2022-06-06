@@ -19,3 +19,6 @@
 
 #debug
 __debug_bin
+
+# Mac
+.DS_Store
