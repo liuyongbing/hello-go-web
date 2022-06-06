@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -71,9 +72,15 @@ func GetUserList(ctx *gin.Context) {
 
 	// 生成 grpc 的 client 并调用接口
 	userSrvClient := proto.NewUserClient(userConn)
+
+	pn := ctx.DefaultQuery("pn", "0")
+	pnInt, _ := strconv.Atoi(pn)
+	pSize := ctx.DefaultQuery("psize", "10")
+	pSizeInt, _ := strconv.Atoi(pSize)
+
 	rsp, err := userSrvClient.GetUserList(context.Background(), &proto.PageInfo{
-		Pn:    0,
-		PSize: 0,
+		Pn:    uint32(pnInt),
+		PSize: uint32(pSizeInt),
 	})
 	if err != nil {
 		zap.S().Errorw("[GetUserList] 查询 [用户服务] 失败")
