@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
@@ -18,6 +19,8 @@ import (
 	"github.com/liuyongbing/hello-go-web/user-web/forms"
 	"github.com/liuyongbing/hello-go-web/user-web/global"
 	"github.com/liuyongbing/hello-go-web/user-web/global/response"
+	"github.com/liuyongbing/hello-go-web/user-web/middlewares"
+	"github.com/liuyongbing/hello-go-web/user-web/models"
 	"github.com/liuyongbing/hello-go-web/user-web/proto"
 )
 

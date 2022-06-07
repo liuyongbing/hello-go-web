@@ -1,6 +1,10 @@
 name: "user-web"
 host: "127.0.0.1"
 port: 8021
+
 user_srv:
   host: "127.0.0.1"
   port: 50051
+
+jwt:
+  key: "gwOeMdL&Bb7htMhLadeaJLU9zKNDIOqF"

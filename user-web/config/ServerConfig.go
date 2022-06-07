@@ -6,4 +6,5 @@ type ServerConfig struct {
 	Host        string        `mapstructure:"host"`
 	Port        int           `mapstructure:"port"`
 	UserSrvInfo UserSrvConfig `mapstructure:"user_srv"`
+	JWTInfo     JWTConfig     `mapstructure:"jwt"`
 }
