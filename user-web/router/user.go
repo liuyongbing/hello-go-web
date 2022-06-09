@@ -21,5 +21,6 @@ func InitUserRouter(Router *gin.RouterGroup) {
 		// UserRouter.GET("list", api.GetUserList) // 获取用户列表
 		UserRouter.GET("", middlewares.JWTAuth(), middlewares.IsAdminAuth(), api.GetUserList) // 获取用户列表
 		UserRouter.POST("pwd_login", api.PassWordLogin)                                       // 用户登录
+		UserRouter.POST("register", api.Register)                                             // 用户注册
 	}
 }

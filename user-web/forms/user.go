@@ -1,6 +1,6 @@
 package forms
 
-// 用户登录
+//  Form: 用户登录
 type PassWordLoginForm struct {
 	Mobile   string `form:"mobile" json:"mobile" binding:"required,mobile"` //手机号码格式有规范可寻， 自定义validator
 	PassWord string `form:"password" json:"password" binding:"required,min=3,max=20"`
@@ -8,12 +8,12 @@ type PassWordLoginForm struct {
 	// CaptchaId string `form:"captcha_id" json:"captcha_id" binding:"required"`
 }
 
-// // 用户注册
-// type RegisterForm struct {
-// 	Mobile   string `form:"mobile" json:"mobile" binding:"required,mobile"` //手机号码格式有规范可寻， 自定义validator
-// 	PassWord string `form:"password" json:"password" binding:"required,min=3,max=20"`
-// 	Code     string `form:"code" json:"code" binding:"required,min=6,max=6"`
-// }
+// Form: 用户注册
+type RegisterForm struct {
+	Mobile   string `form:"mobile" json:"mobile" binding:"required,mobile"`
+	PassWord string `form:"password" json:"password" binding:"required,min=3,max=20"`
+	// Code     string `form:"code" json:"code" binding:"required,min=6,max=6"`
+}
 
 // // 修改用户
 // type UpdateUserForm struct {

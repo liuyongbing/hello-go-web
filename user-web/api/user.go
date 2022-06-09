@@ -50,7 +50,8 @@ func HandleGrpcErrorToHttp(err error, c *gin.Context) {
 				})
 			default:
 				c.JSON(http.StatusInternalServerError, gin.H{
-					"msg": "其他错误",
+					// "msg": "其他错误",
+					"msg": e.Code(),
 				})
 			}
 
@@ -89,6 +90,11 @@ GetUserList
 User API: 获取用户列表
 */
 func GetUserList(ctx *gin.Context) {
+	// 跨域的问题 - 后端解决 也可以前端来解决
+	claims, _ := ctx.Get("claims")
+	currentUser := claims.(*models.CustomClaims)
+	zap.S().Infof("访问用户: %d", currentUser.ID)
+
 	ip := global.ServerConfig.UserSrvInfo.Host
 	port := global.ServerConfig.UserSrvInfo.Port
 
@@ -153,79 +159,151 @@ PassWordLogin
 User API: 用户登录
 */
 func PassWordLogin(c *gin.Context) {
-	//表单验证
-	passwordLoginForm := forms.PassWordLoginForm{}
-	if err := c.ShouldBind(&passwordLoginForm); err != nil {
-		HandleValidatorError(c, err)
+	// 	//表单验证
+	// 	passwordLoginForm := forms.PassWordLoginForm{}
+	// 	if err := c.ShouldBind(&passwordLoginForm); err != nil {
+	// 		HandleValidatorError(c, err)
+	// 		return
+	// 	}
+
+	// 	// if store.Verify(passwordLoginForm.CaptchaId, passwordLoginForm.Captcha, false) {
+	// 	// 	c.JSON(http.StatusBadRequest, gin.H{
+	// 	// 		"captcha": "验证码错误",
+	// 	// 	})
+	// 	// 	return
+	// 	// }
+
+	// 	//登录的逻辑
+	// 	if rsp, err := global.UserSrvClient.GetUserByMobile(context.Background(), &proto.MobileRequest{
+	// 		Mobile: passwordLoginForm.Mobile,
+	// 	}); err != nil {
+	// 		if e, ok := status.FromError(err); ok {
+	// 			switch e.Code() {
+	// 			case codes.NotFound:
+	// 				c.JSON(http.StatusBadRequest, map[string]string{
+	// 					"mobile": "用户不存在",
+	// 				})
+	// 			default:
+	// 				c.JSON(http.StatusInternalServerError, map[string]string{
+	// 					"mobile": "登录失败",
+	// 				})
+	// 			}
+	// 			return
+	// 		}
+	// 	} else {
+	// 		//只是查询到用户了而已，并没有检查密码
+	// 		if passRsp, pasErr := global.UserSrvClient.CheckPassWord(context.Background(), &proto.PasswordCheckInfo{
+	// 			Password:          passwordLoginForm.PassWord,
+	// 			EncryptedPassword: rsp.PassWord,
+	// 		}); pasErr != nil {
+	// 			c.JSON(http.StatusInternalServerError, map[string]string{
+	// 				"password": "登录失败",
+	// 			})
+	// 		} else {
+	// 			if passRsp.Success {
+	// 				//生成token
+	// 				j := middlewares.NewJWT()
+	// 				claims := models.CustomClaims{
+	// 					ID:          uint(rsp.Id),
+	// 					NickName:    rsp.NickName,
+	// 					AuthorityId: uint(rsp.Role),
+	// 					StandardClaims: jwt.StandardClaims{
+	// 						NotBefore: time.Now().Unix(),               //签名的生效时间
+	// 						ExpiresAt: time.Now().Unix() + 60*60*24*30, //30天过期
+	// 						Issuer:    "imooc",
+	// 					},
+	// 				}
+	// 				token, err := j.CreateToken(claims)
+	// 				if err != nil {
+	// 					c.JSON(http.StatusInternalServerError, gin.H{
+	// 						"msg": "生成token失败",
+	// 					})
+	// 					return
+	// 				}
+
+	// 				c.JSON(http.StatusOK, gin.H{
+	// 					"id":         rsp.Id,
+	// 					"nick_name":  rsp.NickName,
+	// 					"token":      token,
+	// 					"expired_at": (time.Now().Unix() + 60*60*24*30) * 1000,
+	// 				})
+	// 			} else {
+	// 				c.JSON(http.StatusBadRequest, map[string]string{
+	// 					"msg": "登录失败",
+	// 				})
+	// 			}
+	// 		}
+	// 	}
+}
+
+/*
+Register
+User API: 用户注册
+*/
+func Register(ctx *gin.Context) {
+	registerForm := forms.RegisterForm{}
+	err := ctx.ShouldBind(&registerForm)
+	if err != nil {
+		HandleValidatorError(ctx, err)
+	}
+
+	// TODO: 验证码验证
+
+	// 跨域的问题 - 后端解决 也可以前端来解决
+	// claims, _ := ctx.Get("claims")
+	// currentUser := claims.(*models.CustomClaims)
+	// zap.S().Infof("访问用户: %d", currentUser.ID)
+
+	ip := global.ServerConfig.UserSrvInfo.Host
+	port := global.ServerConfig.UserSrvInfo.Port
+
+	// 拨号连接 user grpc 服务
+	userConn, err := grpc.Dial(fmt.Sprintf("%s:%d", ip, port), grpc.WithInsecure())
+	if err != nil {
+		zap.S().Errorw("[Register] 连接 [用户服务] 失败",
+			"msg", err.Error(),
+		)
+		HandleGrpcErrorToHttp(err, ctx)
+	}
+	// 生成 grpc 的 client 并调用接口
+	userSrvClient := proto.NewUserClient(userConn)
+
+	user, err := userSrvClient.CreateUser(context.Background(), &proto.CreateUserInfo{
+		NickName: registerForm.Mobile,
+		Mobile:   registerForm.Mobile,
+		PassWord: registerForm.PassWord,
+	})
+	if err != nil {
+		zap.S().Errorw("[Register] 服务 [用户注册] 失败")
+		HandleGrpcErrorToHttp(err, ctx)
 		return
 	}
 
-	// if store.Verify(passwordLoginForm.CaptchaId, passwordLoginForm.Captcha, false) {
-	// 	c.JSON(http.StatusBadRequest, gin.H{
-	// 		"captcha": "验证码错误",
-	// 	})
-	// 	return
-	// }
-
-	//登录的逻辑
-	if rsp, err := global.UserSrvClient.GetUserByMobile(context.Background(), &proto.MobileRequest{
-		Mobile: passwordLoginForm.Mobile,
-	}); err != nil {
-		if e, ok := status.FromError(err); ok {
-			switch e.Code() {
-			case codes.NotFound:
-				c.JSON(http.StatusBadRequest, map[string]string{
-					"mobile": "用户不存在",
-				})
-			default:
-				c.JSON(http.StatusInternalServerError, map[string]string{
-					"mobile": "登录失败",
-				})
-			}
-			return
-		}
-	} else {
-		//只是查询到用户了而已，并没有检查密码
-		if passRsp, pasErr := global.UserSrvClient.CheckPassWord(context.Background(), &proto.PasswordCheckInfo{
-			Password:          passwordLoginForm.PassWord,
-			EncryptedPassword: rsp.PassWord,
-		}); pasErr != nil {
-			c.JSON(http.StatusInternalServerError, map[string]string{
-				"password": "登录失败",
-			})
-		} else {
-			if passRsp.Success {
-				//生成token
-				j := middlewares.NewJWT()
-				claims := models.CustomClaims{
-					ID:          uint(rsp.Id),
-					NickName:    rsp.NickName,
-					AuthorityId: uint(rsp.Role),
-					StandardClaims: jwt.StandardClaims{
-						NotBefore: time.Now().Unix(),               //签名的生效时间
-						ExpiresAt: time.Now().Unix() + 60*60*24*30, //30天过期
-						Issuer:    "imooc",
-					},
-				}
-				token, err := j.CreateToken(claims)
-				if err != nil {
-					c.JSON(http.StatusInternalServerError, gin.H{
-						"msg": "生成token失败",
-					})
-					return
-				}
-
-				c.JSON(http.StatusOK, gin.H{
-					"id":         rsp.Id,
-					"nick_name":  rsp.NickName,
-					"token":      token,
-					"expired_at": (time.Now().Unix() + 60*60*24*30) * 1000,
-				})
-			} else {
-				c.JSON(http.StatusBadRequest, map[string]string{
-					"msg": "登录失败",
-				})
-			}
-		}
+	j := middlewares.NewJWT()
+	claims := models.CustomClaims{
+		ID:          uint(user.Id),
+		NickName:    user.NickName,
+		AuthorityId: uint(user.Role),
+		StandardClaims: jwt.StandardClaims{
+			NotBefore: time.Now().Unix(),               //签名的生效时间
+			ExpiresAt: time.Now().Unix() + 60*60*24*30, //30天过期
+			Issuer:    "imooc",
+		},
 	}
+
+	token, err := j.CreateToken(claims)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"msg": "生成token失败",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"id":         user.Id,
+		"nick_name":  user.NickName,
+		"token":      token,
+		"expired_at": time.Now().Unix() + 60*60*24*30*1000,
+	})
+
 }
