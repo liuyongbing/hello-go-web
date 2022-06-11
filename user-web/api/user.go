@@ -11,6 +11,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/hashicorp/consul/api"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -86,6 +87,40 @@ func HandleValidatorError(c *gin.Context, err error) {
 		"error": removeTopStruct(errs.Translate(global.Trans)),
 	})
 	return
+}
+
+/*
+FilterServices
+发现服务(筛选)
+*/
+func FilterServices() (host string, port int) {
+	consulInfo := global.ServerConfig.ConsulInfo
+	cfg := api.DefaultConfig()
+	// cfg.Address = "127.0.0.1:8500"
+	cfg.Address = fmt.Sprintf("%s:%d", consulInfo.Host, consulInfo.Port)
+
+	client, err := api.NewClient(cfg)
+	if err != nil {
+		panic(err)
+	}
+
+	// filter := `Service == "user-web"`
+	filter := fmt.Sprintf(`Service == "%s"`, global.ServerConfig.UserSrvInfo.Name)
+	data, err := client.Agent().ServicesWithFilter(filter)
+	if err != nil {
+		panic(err)
+	}
+
+	userSrvHost := ""
+	userSrvPort := 0
+
+	for _, value := range data {
+		userSrvHost = value.Address
+		userSrvPort = value.Port
+		break
+	}
+
+	return userSrvHost, userSrvPort
 }
 
 /*
@@ -257,8 +292,10 @@ func Register(ctx *gin.Context) {
 	// currentUser := claims.(*models.CustomClaims)
 	// zap.S().Infof("访问用户: %d", currentUser.ID)
 
-	ip := global.ServerConfig.UserSrvInfo.Host
-	port := global.ServerConfig.UserSrvInfo.Port
+	// ip := global.ServerConfig.UserSrvInfo.Host
+	// port := global.ServerConfig.UserSrvInfo.Port
+	// 从注册中心发现服务
+	ip, port := FilterServices()
 
 	// 拨号连接 user grpc 服务
 	userConn, err := grpc.Dial(fmt.Sprintf("%s:%d", ip, port), grpc.WithInsecure())
