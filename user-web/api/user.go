@@ -295,18 +295,20 @@ func Register(ctx *gin.Context) {
 	// ip := global.ServerConfig.UserSrvInfo.Host
 	// port := global.ServerConfig.UserSrvInfo.Port
 	// 从注册中心发现服务
-	ip, port := FilterServices()
+	// ip, port := FilterServices()
 
-	// 拨号连接 user grpc 服务
-	userConn, err := grpc.Dial(fmt.Sprintf("%s:%d", ip, port), grpc.WithInsecure())
-	if err != nil {
-		zap.S().Errorw("[Register] 连接 [用户服务] 失败",
-			"msg", err.Error(),
-		)
-		HandleGrpcErrorToHttp(err, ctx)
-	}
-	// 生成 grpc 的 client 并调用接口
-	userSrvClient := proto.NewUserClient(userConn)
+	// // 拨号连接 user grpc 服务
+	// userConn, err := grpc.Dial(fmt.Sprintf("%s:%d", ip, port), grpc.WithInsecure())
+	// if err != nil {
+	// 	zap.S().Errorw("[Register] 连接 [用户服务] 失败",
+	// 		"msg", err.Error(),
+	// 	)
+	// 	HandleGrpcErrorToHttp(err, ctx)
+	// }
+	// // 生成 grpc 的 client 并调用接口
+	// userSrvClient := proto.NewUserClient(userConn)
+	// GRPC Client 已封装成公共变量，且已初始化，直接使用
+	userSrvClient := global.UserSrvClient
 
 	user, err := userSrvClient.CreateUser(context.Background(), &proto.CreateUserInfo{
 		NickName: registerForm.Mobile,

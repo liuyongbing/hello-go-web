@@ -41,6 +41,9 @@ func main() {
 		})
 	}
 
+	// 初始化 GRPC Client
+	initialize.InitSrvConn()
+
 	// router := gin.Default()
 	// 1. 路由配置交给专门的路由配置层处理
 	// router.GET("/ping")
