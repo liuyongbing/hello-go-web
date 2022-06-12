@@ -11,6 +11,7 @@ import (
 
 	"github.com/liuyongbing/hello-go-web/user-web/global"
 	"github.com/liuyongbing/hello-go-web/user-web/initialize"
+	"github.com/liuyongbing/hello-go-web/user-web/utils"
 	myvalidator "github.com/liuyongbing/hello-go-web/user-web/validator"
 )
 
@@ -61,6 +62,19 @@ func main() {
 		3. zap.S() & zap.L() 提供了一个全局的可安全访问 logger 的途径
 	*/
 	zap.S().Infof("启动服务器，端口：%d", port)
+
+	// 服务注册
+	// addr := global.ServerConfig.Host
+	addr := "192.168.31.141"
+	// port := *Port
+	name := global.ServerConfig.Name
+	id := global.ServerConfig.Name
+	tags := []string{
+		"user-web",
+		"gosrv-register",
+		"consul",
+	}
+	utils.Register(addr, port, name, tags, id)
 
 	err := Router.Run(fmt.Sprintf(":%d", port))
 	if err != nil {
