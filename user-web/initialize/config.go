@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/liuyongbing/hello-go-web/user-web/global"
+	"github.com/liuyongbing/hello-go-web/user-web/utils"
 )
 
 func GetEnvInfo(env string) string {
@@ -40,6 +41,15 @@ func InitConfig() {
 		panic(err)
 	}
 	zap.S().Infof("加载配置信息：%v", serverConfig)
+
+	// 根据环境，动态生成端口
+	if configFileMode != "dev" {
+		freePort, err := utils.GetFreePort()
+		if err == nil {
+			global.ServerConfig.Port = freePort
+			zap.S().Infof("重置端口[%d]", global.ServerConfig.Port)
+		}
+	}
 
 	// 动态监控配置文件变化
 	v.WatchConfig()
