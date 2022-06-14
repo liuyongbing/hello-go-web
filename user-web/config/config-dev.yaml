@@ -1,15 +1,8 @@
-name: "user-web"
-host: "127.0.0.1"
-port: 8021
-
-user_srv:
+nacos:
   host: "127.0.0.1"
-  port: 50051
-  name: "user-srv"
-
-jwt:
-  key: "gwOeMdL&Bb7htMhLadeaJLU9zKNDIOqF"
-
-consul:
-  host: "127.0.0.1"
-  port: 8500
+  port: 8848
+  user: "nacos"
+  password: "nacos"
+  namespace_id: "229535b5-2256-4339-a1f3-66d06605344d"
+  data_id: "user-web"
+  group: "dev"

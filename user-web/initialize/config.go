@@ -1,23 +1,117 @@
 package initialize
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/nacos-group/nacos-sdk-go/clients"
+	"github.com/nacos-group/nacos-sdk-go/common/constant"
+	"github.com/nacos-group/nacos-sdk-go/vo"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 
+	"github.com/liuyongbing/hello-go-web/user-web/config"
 	"github.com/liuyongbing/hello-go-web/user-web/global"
 	"github.com/liuyongbing/hello-go-web/user-web/utils"
 )
 
+/*
+GetEnvInfo
+获取环境变量
+*/
 func GetEnvInfo(env string) string {
 	viper.AutomaticEnv()
 
 	return viper.GetString(env)
 }
 
+/*
+LoadConfig
+从配置中心加载配置信息
+*/
+func LoadConfigFromNacos(cfg config.NacosConfig) {
+	// Nacos 服务器配置
+	serverConfigs := []constant.ServerConfig{
+		{
+			IpAddr: cfg.Host,
+			Port:   cfg.Port,
+		},
+	}
+
+	// Nacos 客户端配置
+	clientConfig := constant.ClientConfig{
+		NamespaceId:         cfg.NamespaceId,
+		TimeoutMs:           5000,
+		NotLoadCacheAtStart: true,
+		LogDir:              "tmp/nacos/log",
+		CacheDir:            "tmp/nacos/cache",
+		LogLevel:            "debug",
+	}
+
+	// 创建 Nacos 客户端连接
+	nacosClient, err := clients.CreateConfigClient(map[string]interface{}{
+		"serverConfigs": serverConfigs,
+		"clientConfig":  clientConfig,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	// 读取 Nacos 配置信息
+	configInfo, err := nacosClient.GetConfig(vo.ConfigParam{
+		DataId: cfg.DataId,
+		Group:  cfg.Group,
+	})
+	if err != nil {
+		panic(err)
+	}
+	zap.S().Infof("Nacos 原始配置内容：%s", configInfo)
+
+	serverConfig := global.ServerConfig
+	if err := json.Unmarshal([]byte(configInfo), &serverConfig); err != nil {
+		panic(err)
+	}
+	zap.S().Infof("Nacos 绑定配置内容：%v", serverConfig)
+}
+
+/*
+InitConfig
+初始化配置信息
+*/
 func InitConfig() {
+	// 根据环境变量加载配置文件
+	debug := GetEnvInfo("PATH")
+	pathStr := ""
+	configFileMode := "prd"
+	if pathStr != debug {
+		configFileMode = "dev"
+	}
+	configFileName := fmt.Sprintf("config/config-%s.yaml", configFileMode)
+
+	v := viper.New()
+	v.SetConfigFile(configFileName)
+
+	// 读取本地配置
+	if err := v.ReadInConfig(); err != nil {
+		panic(err)
+	}
+	baseCfg := config.BaseConfig{}
+	if err := v.Unmarshal(&baseCfg); err != nil {
+		panic(err)
+	}
+	zap.S().Infof("本地配置：%v", baseCfg)
+
+	nacosCfg := baseCfg.NacosInfo
+	LoadConfigFromNacos(nacosCfg)
+
+}
+
+/*
+InitConfig
+初始化配置信息
+*/
+func InitConfig2() {
 	// 根据环境变量加载配置文件
 	debug := GetEnvInfo("PATH")
 	pathStr := ""

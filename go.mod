@@ -5,11 +5,15 @@ go 1.18
 require (
 	github.com/gin-gonic/gin v1.8.0
 	github.com/hashicorp/consul/api v1.12.0
+	github.com/nacos-group/nacos-sdk-go v1.1.1
 )
 
 require (
+	github.com/aliyun/alibaba-cloud-sdk-go v1.61.18 // indirect
 	github.com/armon/go-metrics v0.3.10 // indirect
+	github.com/buger/jsonparser v1.1.1 // indirect
 	github.com/fatih/color v1.13.0 // indirect
+	github.com/go-errors/errors v1.0.1 // indirect
 	github.com/go-playground/form v3.1.4+incompatible // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
@@ -19,6 +23,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/serf v0.9.7 // indirect
+	github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af // indirect
 	github.com/jpillora/backoff v1.0.0 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
@@ -31,8 +36,10 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.3.0 // indirect
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	google.golang.org/genproto v0.0.0-20220519153652-3a47de7e79bd // indirect
 	gopkg.in/ini.v1 v1.66.4 // indirect
+	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0 // indirect
 )
 

@@ -14,11 +14,15 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
-#log
+# log
 *.log
 
-#debug
+# debug
 __debug_bin
 
 # Mac
 .DS_Store
+
+# tmp
+tmp/
+

@@ -65,7 +65,8 @@ func main() {
 
 	// 服务注册
 	// addr := global.ServerConfig.Host
-	addr := "192.168.31.141"
+	// addr := "192.168.31.141"
+	addr := "10.8.19.134"
 	// port := *Port
 	name := global.ServerConfig.Name
 	id := global.ServerConfig.Name
