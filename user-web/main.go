@@ -2,16 +2,20 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"go.uber.org/zap"
 
 	"github.com/gin-gonic/gin/binding"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
+	uuid "github.com/satori/go.uuid"
 
 	"github.com/liuyongbing/hello-go-web/user-web/global"
 	"github.com/liuyongbing/hello-go-web/user-web/initialize"
-	"github.com/liuyongbing/hello-go-web/user-web/utils"
+	"github.com/liuyongbing/hello-go-web/user-web/utils/register/consul"
 	myvalidator "github.com/liuyongbing/hello-go-web/user-web/validator"
 )
 
@@ -64,21 +68,30 @@ func main() {
 	zap.S().Infof("启动服务器，端口：%d", port)
 
 	// 服务注册
-	// addr := global.ServerConfig.Host
-	// addr := "192.168.31.141"
-	addr := "10.8.19.134"
-	// port := *Port
+	addr := global.ServerConfig.Host
 	name := global.ServerConfig.Name
-	id := global.ServerConfig.Name
-	tags := []string{
-		"user-web",
-		"gosrv-register",
-		"consul",
-	}
-	utils.Register(addr, port, name, tags, id)
+	tags := global.ServerConfig.Tags
+	id := uuid.NewV4().String()
 
-	err := Router.Run(fmt.Sprintf(":%d", port))
+	regClient := consul.NewRegistryClient(global.ServerConfig.ConsulInfo.Host, global.ServerConfig.ConsulInfo.Port)
+	err := regClient.Register(addr, port, name, tags, id)
 	if err != nil {
-		zap.S().Panic("启动服务器失败：", err.Error())
+		zap.S().Panic("服务注册失败：", err.Error())
+	}
+
+	go func() {
+		if err := Router.Run(fmt.Sprintf(":%d", port)); err != nil {
+			zap.S().Panic("启动服务器失败：", err.Error())
+		}
+	}()
+
+	quit := make(chan os.Signal)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	if err := regClient.DeRegister(id); err != nil {
+		zap.S().Info("注销失败", err.Error())
+	} else {
+		zap.S().Info("注销成功")
 	}
 }
