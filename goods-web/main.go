@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"go.uber.org/zap"
 
@@ -76,8 +79,19 @@ func main() {
 		zap.S().Panic("服务注册失败：", err.Error())
 	}
 
-	err = Router.Run(fmt.Sprintf(":%d", port))
-	if err != nil {
-		zap.S().Panic("启动服务器失败：", err.Error())
+	go func() {
+		if err := Router.Run(fmt.Sprintf(":%d", port)); err != nil {
+			zap.S().Panic("启动服务器失败：", err.Error())
+		}
+	}()
+
+	quit := make(chan os.Signal)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	if err := regClient.DeRegister(id); err != nil {
+		zap.S().Info("注销失败", err.Error())
+	} else {
+		zap.S().Info("注销成功")
 	}
 }

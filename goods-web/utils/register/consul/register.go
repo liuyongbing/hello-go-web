@@ -63,6 +63,18 @@ func (r *Registry) Register(addr string, port int, name string, tags []string, i
 	return nil
 }
 
+/*
+DeRegister
+服务注销
+*/
 func (r *Registry) DeRegister(serviceId string) error {
-	return nil
+	cfg := api.DefaultConfig()
+	cfg.Address = fmt.Sprintf("%s:%d", r.Host, r.Port)
+
+	client, err := api.NewClient(cfg)
+	if err != nil {
+		return err
+	}
+	err = client.Agent().ServiceDeregister(serviceId)
+	return err
 }
