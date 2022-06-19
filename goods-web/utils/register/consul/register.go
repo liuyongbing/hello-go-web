@@ -1,23 +1,35 @@
-package utils
+package consul
 
 import (
 	"fmt"
 
 	"github.com/hashicorp/consul/api"
-
-	"github.com/liuyongbing/hello-go-web/goods-web/global"
 )
+
+type Registry struct {
+	Host string
+	Port int
+}
+
+type RegistryClient interface {
+	Register(address string, port int, name string, tags []string, id string) error
+	DeRegister(serviceId string) error
+}
+
+func NewRegistryClient(host string, port int) RegistryClient {
+	return &Registry{
+		Host: host,
+		Port: port,
+	}
+}
 
 /*
 Register
 服务注册
 */
-func Register(addr string, port int, name string, tags []string, id string) {
-	consulInfo := global.ServerConfig.ConsulInfo
-
+func (r *Registry) Register(addr string, port int, name string, tags []string, id string) error {
 	cfg := api.DefaultConfig()
-	// cfg.Address = "127.0.0.1:8500"
-	cfg.Address = fmt.Sprintf("%s:%d", consulInfo.Host, consulInfo.Port)
+	cfg.Address = fmt.Sprintf("%s:%d", r.Host, r.Port)
 
 	client, err := api.NewClient(cfg)
 	if err != nil {
@@ -48,4 +60,9 @@ func Register(addr string, port int, name string, tags []string, id string) {
 	if err != nil {
 		panic(err)
 	}
+	return nil
+}
+
+func (r *Registry) DeRegister(serviceId string) error {
+	return nil
 }

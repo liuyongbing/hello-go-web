@@ -6,6 +6,7 @@ require (
 	github.com/gin-gonic/gin v1.8.0
 	github.com/hashicorp/consul/api v1.12.0
 	github.com/nacos-group/nacos-sdk-go v1.1.1
+	github.com/satori/go.uuid v1.2.0
 )
 
 require (

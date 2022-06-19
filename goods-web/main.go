@@ -8,10 +8,11 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
+	uuid "github.com/satori/go.uuid"
 
 	"github.com/liuyongbing/hello-go-web/goods-web/global"
 	"github.com/liuyongbing/hello-go-web/goods-web/initialize"
-	"github.com/liuyongbing/hello-go-web/goods-web/utils"
+	"github.com/liuyongbing/hello-go-web/goods-web/utils/register/consul"
 	myvalidator "github.com/liuyongbing/hello-go-web/goods-web/validator"
 )
 
@@ -64,20 +65,18 @@ func main() {
 	zap.S().Infof("启动服务器，端口：%d", port)
 
 	// 服务注册
-	// addr := global.ServerConfig.Host
-	addr := "192.168.31.141"
-	// addr := "10.8.19.134"
-	// port := *Port
+	addr := global.ServerConfig.Host
 	name := global.ServerConfig.Name
-	id := global.ServerConfig.Name
-	tags := []string{
-		"goods-web",
-		"gosrv-register",
-		"consul",
-	}
-	utils.Register(addr, port, name, tags, id)
+	tags := global.ServerConfig.Tags
+	id := uuid.NewV4().String()
 
-	err := Router.Run(fmt.Sprintf(":%d", port))
+	regClient := consul.NewRegistryClient(global.ServerConfig.ConsulInfo.Host, global.ServerConfig.ConsulInfo.Port)
+	err := regClient.Register(addr, port, name, tags, id)
+	if err != nil {
+		zap.S().Panic("服务注册失败：", err.Error())
+	}
+
+	err = Router.Run(fmt.Sprintf(":%d", port))
 	if err != nil {
 		zap.S().Panic("启动服务器失败：", err.Error())
 	}
