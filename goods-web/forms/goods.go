@@ -15,3 +15,10 @@ type GoodsForm struct {
 	FrontImage  string   `form:"front_image" json:"front_image" binding:"required,url"`
 	Brand       int32    `form:"brand" json:"brand" binding:"required"`
 }
+
+// 状态设置
+type GoodsStatusForm struct {
+	IsNew  *bool `form:"new" json:"new" binding:"required"`
+	IsHot  *bool `form:"hot" json:"hot" binding:"required"`
+	OnSale *bool `form:"sale" json:"sale" binding:"required"`
+}

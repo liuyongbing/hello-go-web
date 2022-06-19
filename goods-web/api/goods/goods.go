@@ -277,6 +277,35 @@ func Update(ctx *gin.Context) {
 }
 
 /*
+UpdateStatus
+设置状态
+*/
+func UpdateStatus(ctx *gin.Context) {
+	goodsStatusForm := forms.GoodsStatusForm{}
+	if err := ctx.ShouldBindJSON(&goodsStatusForm); err != nil {
+		api.HandleValidatorError(ctx, err)
+		return
+	}
+
+	id := ctx.Param("id")
+	i, _ := strconv.ParseInt(id, 10, 32)
+	if _, err := global.GoodsSrvClient.UpdateGoods(context.Background(), &proto.CreateGoodsInfo{
+		Id:     int32(i),
+		IsHot:  *goodsStatusForm.IsHot,
+		IsNew:  *goodsStatusForm.IsNew,
+		OnSale: *goodsStatusForm.OnSale,
+		// CategoryId: 130366, // TODO: fix gRPC checkek
+		// BrandId:    616,
+	}); err != nil {
+		api.HandleGrpcErrorToHttp(err, ctx)
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"msg": "修改成功",
+	})
+}
+
+/*
 Delete
 删除商品
 */
