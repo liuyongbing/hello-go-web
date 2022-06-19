@@ -11,6 +11,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/liuyongbing/hello-go-web/goods-web/api"
+	"github.com/liuyongbing/hello-go-web/goods-web/forms"
 	"github.com/liuyongbing/hello-go-web/goods-web/global"
 	"github.com/liuyongbing/hello-go-web/goods-web/proto"
 )
@@ -31,7 +32,7 @@ func Pong(ctx *gin.Context) {
 	})
 }
 
-// List
+// List 商品列表
 func List(ctx *gin.Context) {
 	fmt.Println("商品列表")
 	// 商品的列表 pmin=abc, spring cloud, go-micro
@@ -130,4 +131,37 @@ func List(ctx *gin.Context) {
 	reMap["data"] = goodsList
 
 	ctx.JSON(http.StatusOK, reMap)
+}
+
+// Create 创建商品
+func Create(ctx *gin.Context) {
+	goodsForm := forms.GoodsForm{}
+	if err := ctx.ShouldBindJSON(&goodsForm); err != nil {
+		api.HandleValidatorError(ctx, err)
+		return
+	}
+
+	goodsClient := global.GoodsSrvClient
+	rsp, err := goodsClient.CreateGoods(context.Background(), &proto.CreateGoodsInfo{
+		Name:            goodsForm.Name,
+		GoodsSn:         goodsForm.GoodsSn,
+		Stocks:          goodsForm.Stocks,
+		MarketPrice:     goodsForm.MarketPrice,
+		ShopPrice:       goodsForm.ShopPrice,
+		GoodsBrief:      goodsForm.GoodsBrief,
+		ShipFree:        *goodsForm.ShipFree,
+		Images:          goodsForm.Images,
+		DescImages:      goodsForm.DescImages,
+		GoodsFrontImage: goodsForm.FrontImage,
+		CategoryId:      goodsForm.CategoryId,
+		BrandId:         goodsForm.Brand,
+	})
+	if err != nil {
+		api.HandleGrpcErrorToHttp(err, ctx)
+		return
+	}
+
+	//如何设置库存
+	//TODO 商品的库存 - 分布式事务
+	ctx.JSON(http.StatusOK, rsp)
 }

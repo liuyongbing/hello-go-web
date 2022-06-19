@@ -5,6 +5,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/liuyongbing/hello-go-web/goods-web/api/goods"
+	"github.com/liuyongbing/hello-go-web/goods-web/middlewares"
 )
 
 func InitGoodsRouter(Router *gin.RouterGroup) {
@@ -17,8 +18,8 @@ func InitGoodsRouter(Router *gin.RouterGroup) {
 	// API: Goods
 	GoodsRouter := Router.Group("goods")
 	{
-		GoodsRouter.GET("ping", goods.Pong) // Demo
-		GoodsRouter.GET("list", goods.List) // 列表
-		// UserRouter.GET("", middlewares.JWTAuth(), middlewares.IsAdminAuth(), api.GetGoodsList) // 获取用户列表
+		GoodsRouter.GET("ping", goods.Pong)                                                  // Demo
+		GoodsRouter.GET("", goods.List)                                                      // 列表
+		GoodsRouter.POST("", middlewares.JWTAuth(), middlewares.IsAdminAuth(), goods.Create) // 创建
 	}
 }
