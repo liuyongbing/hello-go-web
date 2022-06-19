@@ -24,11 +24,12 @@ func InitGoodsRouter(Router *gin.RouterGroup) {
 		GoodsRouter.GET("/:id", goods.Detail)        // 详情
 		GoodsRouter.GET("/:id/stocks", goods.Stocks) // 库存
 
-		GoodsRouter.POST("", middlewares.JWTAuth(), middlewares.IsAdminAuth(), goods.Create) // 创建
-		// GoodsRouter.POST("", middlewares.JWTAuth(), middlewares.IsAdminAuth(), goods.Create) // 修改
-		// GoodsRouter.POST("", middlewares.JWTAuth(), middlewares.IsAdminAuth(), goods.Create) // 设置状态
+		GoodsRouter.POST("", middlewares.JWTAuth(), middlewares.IsAdminAuth(), goods.Create)    // 创建
+		GoodsRouter.PUT("/:id", middlewares.JWTAuth(), middlewares.IsAdminAuth(), goods.Update) // 修改
+		// GoodsRouter.PATCH("/:id", middlewares.JWTAuth(), middlewares.IsAdminAuth(), goods.Create)  // 设置状态
 		GoodsRouter.DELETE("/:id", middlewares.JWTAuth(), middlewares.IsAdminAuth(), goods.Delete) // 删除
 
+		// GoodsRouter.PUT("/:id", goods.Update) // 修改
 		// GoodsRouter.DELETE("/:id", goods.Delete) // 删除
 	}
 }

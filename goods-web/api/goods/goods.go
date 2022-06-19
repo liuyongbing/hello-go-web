@@ -133,39 +133,6 @@ func List(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, reMap)
 }
 
-// Create 创建商品
-func Create(ctx *gin.Context) {
-	goodsForm := forms.GoodsForm{}
-	if err := ctx.ShouldBindJSON(&goodsForm); err != nil {
-		api.HandleValidatorError(ctx, err)
-		return
-	}
-
-	goodsClient := global.GoodsSrvClient
-	rsp, err := goodsClient.CreateGoods(context.Background(), &proto.CreateGoodsInfo{
-		Name:            goodsForm.Name,
-		GoodsSn:         goodsForm.GoodsSn,
-		Stocks:          goodsForm.Stocks,
-		MarketPrice:     goodsForm.MarketPrice,
-		ShopPrice:       goodsForm.ShopPrice,
-		GoodsBrief:      goodsForm.GoodsBrief,
-		ShipFree:        *goodsForm.ShipFree,
-		Images:          goodsForm.Images,
-		DescImages:      goodsForm.DescImages,
-		GoodsFrontImage: goodsForm.FrontImage,
-		CategoryId:      goodsForm.CategoryId,
-		BrandId:         goodsForm.Brand,
-	})
-	if err != nil {
-		api.HandleGrpcErrorToHttp(err, ctx)
-		return
-	}
-
-	//如何设置库存
-	//TODO 商品的库存 - 分布式事务
-	ctx.JSON(http.StatusOK, rsp)
-}
-
 /*
 Detail
 商品详情
@@ -234,7 +201,79 @@ func Stocks(ctx *gin.Context) {
 			"stock":    999999,
 		},
 	})
-	return
+}
+
+/*
+Create
+创建商品
+*/
+func Create(ctx *gin.Context) {
+	goodsForm := forms.GoodsForm{}
+	if err := ctx.ShouldBindJSON(&goodsForm); err != nil {
+		api.HandleValidatorError(ctx, err)
+		return
+	}
+
+	goodsClient := global.GoodsSrvClient
+	rsp, err := goodsClient.CreateGoods(context.Background(), &proto.CreateGoodsInfo{
+		Name:            goodsForm.Name,
+		GoodsSn:         goodsForm.GoodsSn,
+		Stocks:          goodsForm.Stocks,
+		MarketPrice:     goodsForm.MarketPrice,
+		ShopPrice:       goodsForm.ShopPrice,
+		GoodsBrief:      goodsForm.GoodsBrief,
+		ShipFree:        *goodsForm.ShipFree,
+		Images:          goodsForm.Images,
+		DescImages:      goodsForm.DescImages,
+		GoodsFrontImage: goodsForm.FrontImage,
+		CategoryId:      goodsForm.CategoryId,
+		BrandId:         goodsForm.Brand,
+	})
+	if err != nil {
+		api.HandleGrpcErrorToHttp(err, ctx)
+		return
+	}
+
+	//如何设置库存
+	//TODO 商品的库存 - 分布式事务
+	ctx.JSON(http.StatusOK, rsp)
+}
+
+/*
+Update
+更新商品
+*/
+func Update(ctx *gin.Context) {
+	goodsForm := forms.GoodsForm{}
+	if err := ctx.ShouldBindJSON(&goodsForm); err != nil {
+		api.HandleValidatorError(ctx, err)
+		return
+	}
+
+	id := ctx.Param("id")
+	i, _ := strconv.ParseInt(id, 10, 32)
+	if _, err := global.GoodsSrvClient.UpdateGoods(context.Background(), &proto.CreateGoodsInfo{
+		Id:              int32(i),
+		Name:            goodsForm.Name,
+		GoodsSn:         goodsForm.GoodsSn,
+		Stocks:          goodsForm.Stocks,
+		MarketPrice:     goodsForm.MarketPrice,
+		ShopPrice:       goodsForm.ShopPrice,
+		GoodsBrief:      goodsForm.GoodsBrief,
+		ShipFree:        *goodsForm.ShipFree,
+		Images:          goodsForm.Images,
+		DescImages:      goodsForm.DescImages,
+		GoodsFrontImage: goodsForm.FrontImage,
+		CategoryId:      goodsForm.CategoryId,
+		BrandId:         goodsForm.Brand,
+	}); err != nil {
+		api.HandleGrpcErrorToHttp(err, ctx)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"msg": "更新成功",
+	})
 }
 
 /*
