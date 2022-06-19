@@ -213,3 +213,25 @@ func Detail(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, rsp)
 }
+
+/*
+Delete
+删除商品
+*/
+func Delete(ctx *gin.Context) {
+	id := ctx.Param("id")
+	i, err := strconv.ParseInt(id, 10, 32)
+	if err != nil {
+		ctx.Status(http.StatusNotFound)
+		return
+	}
+	_, err = global.GoodsSrvClient.DeleteGoods(context.Background(), &proto.DeleteGoodsInfo{Id: int32(i)})
+	if err != nil {
+		api.HandleGrpcErrorToHttp(err, ctx)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"msg": "删除成功",
+	})
+}

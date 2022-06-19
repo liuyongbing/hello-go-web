@@ -18,9 +18,16 @@ func InitGoodsRouter(Router *gin.RouterGroup) {
 	// API: Goods
 	GoodsRouter := Router.Group("goods")
 	{
-		GoodsRouter.GET("ping", goods.Pong)                                                  // Demo
-		GoodsRouter.GET("", goods.List)                                                      // 列表
+		GoodsRouter.GET("ping", goods.Pong) // Demo
+
+		GoodsRouter.GET("", goods.List)       // 列表
+		GoodsRouter.GET("/:id", goods.Detail) // 详情
+
 		GoodsRouter.POST("", middlewares.JWTAuth(), middlewares.IsAdminAuth(), goods.Create) // 创建
-		GoodsRouter.GET("/:id", goods.Detail)                                                // 详情
+		// GoodsRouter.POST("", middlewares.JWTAuth(), middlewares.IsAdminAuth(), goods.Create) // 修改
+		// GoodsRouter.POST("", middlewares.JWTAuth(), middlewares.IsAdminAuth(), goods.Create) // 设置状态
+		GoodsRouter.DELETE("/:id", middlewares.JWTAuth(), middlewares.IsAdminAuth(), goods.Delete) // 删除
+
+		// GoodsRouter.DELETE("/:id", goods.Delete) // 删除
 	}
 }
