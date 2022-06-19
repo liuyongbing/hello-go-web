@@ -21,5 +21,6 @@ func InitGoodsRouter(Router *gin.RouterGroup) {
 		GoodsRouter.GET("ping", goods.Pong)                                                  // Demo
 		GoodsRouter.GET("", goods.List)                                                      // 列表
 		GoodsRouter.POST("", middlewares.JWTAuth(), middlewares.IsAdminAuth(), goods.Create) // 创建
+		GoodsRouter.GET("/:id", goods.Detail)                                                // 详情
 	}
 }

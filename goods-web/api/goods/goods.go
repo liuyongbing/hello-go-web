@@ -165,3 +165,51 @@ func Create(ctx *gin.Context) {
 	//TODO 商品的库存 - 分布式事务
 	ctx.JSON(http.StatusOK, rsp)
 }
+
+/*
+Detail
+商品详情
+*/
+func Detail(ctx *gin.Context) {
+	id := ctx.Param("id")
+	i, err := strconv.ParseInt(id, 10, 32)
+	if err != nil {
+		ctx.Status(http.StatusNotFound)
+		return
+	}
+
+	// r, err := global.GoodsSrvClient.GetGoodsDetail(context.WithValue(context.Background(), "ginContext", ctx), &proto.GoodInfoRequest{
+	r, err := global.GoodsSrvClient.GetGoodsDetail(context.Background(), &proto.GoodInfoRequest{
+		Id: int32(i),
+	})
+	if err != nil {
+		api.HandleGrpcErrorToHttp(err, ctx)
+		return
+	}
+
+	rsp := map[string]interface{}{
+		"id":          r.Id,
+		"name":        r.Name,
+		"goods_brief": r.GoodsBrief,
+		"desc":        r.GoodsDesc,
+		"ship_free":   r.ShipFree,
+		"images":      r.Images,
+		"desc_images": r.DescImages,
+		"front_image": r.GoodsFrontImage,
+		"shop_price":  r.ShopPrice,
+		"ctegory": map[string]interface{}{
+			"id":   r.Category.Id,
+			"name": r.Category.Name,
+		},
+		"brand": map[string]interface{}{
+			"id":   r.Brand.Id,
+			"name": r.Brand.Name,
+			"logo": r.Brand.Logo,
+		},
+		"is_hot":  r.IsHot,
+		"is_new":  r.IsNew,
+		"on_sale": r.OnSale,
+	}
+
+	ctx.JSON(http.StatusOK, rsp)
+}
