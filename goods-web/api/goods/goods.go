@@ -215,6 +215,29 @@ func Detail(ctx *gin.Context) {
 }
 
 /*
+Stocks
+商品库存
+*/
+func Stocks(ctx *gin.Context) {
+	id := ctx.Param("id")
+	i, err := strconv.ParseInt(id, 10, 32)
+	if err != nil {
+		ctx.Status(http.StatusNotFound)
+		return
+	}
+
+	// TODO 商品的库存
+	ctx.JSON(http.StatusOK, gin.H{
+		"msg": "待实现",
+		"stocks": map[string]int{
+			"goods_id": int(i),
+			"stock":    999999,
+		},
+	})
+	return
+}
+
+/*
 Delete
 删除商品
 */
