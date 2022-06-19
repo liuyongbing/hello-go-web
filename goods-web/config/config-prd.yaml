@@ -1,0 +1,8 @@
+nacos:
+  host: "127.0.0.1"
+  port: 8848
+  user: "nacos"
+  password: "nacos"
+  namespace_id: "b18bc903-20b6-45cb-81fe-ba5f98527c68"
+  data_id: "goods-web"
+  group: "prd"
