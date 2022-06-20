@@ -41,6 +41,7 @@ func Routers() *gin.Engine {
 	r.Use(middlewares.Cors())
 
 	ApiGroup := r.Group("/g/v1")
+	router.InitBannerRouter(ApiGroup)   // Banner
 	router.InitCategoryRouter(ApiGroup) // Category
 	router.InitGoodsRouter(ApiGroup)    // Goods
 
